@@ -69,7 +69,7 @@ c('.pizzaInfo--qtmais').addEventListener('click', ()=>{
 })
 
 cs('.pizzaInfo--size').forEach((size, sizeIndex) => {
-    size.addEventListener('click', ()=>{
+    size.addEventListener('click', (e)=>{
         c('.pizzaInfo--size.selected').classList.remove("selected")
         size.classList.add('selected')
     })
@@ -95,4 +95,81 @@ even if the pizzas were added in different moments*/
         })
     }
     closeModal()
+    updateCart()
 })
+
+c('.menu-openner').addEventListener('click', ()=>{
+    if(cart.length > 0){
+        c('aside').style.left = '0'
+    }
+})
+c('.menu-closer').addEventListener('click', ()=>{
+    c('aside').style.left = '100vw'
+})
+
+function updateCart(){
+    c('.menu-openner span').innerHTML = cart.length
+
+    if(cart.length > 0){
+        c('aside').classList.add('show')
+        c('.cart').innerHTML = ''
+
+        let subtotal = 0
+        let desconto = 0
+        let total = 0
+
+        for(let i in cart){
+            let pizzaItem = pizzaJson.find((item)=>{
+                return item.id == cart[i].id
+            })
+            subtotal += pizzaItem.price * cart[i].qt
+
+            let cartItem = c('.models .cart--item').cloneNode(true)
+            let pizzaSizeName
+            switch (cart[i].size) {
+                case 0:
+                    pizzaSizeName = 'P'
+                    break;
+                case 1:
+                    pizzaSizeName = 'M'
+                    break;
+                case 2:
+                    pizzaSizeName = 'G'
+                    break;
+                default:
+                    break;
+            }
+
+
+            let pizzaName = `${pizzaItem.name} (${pizzaSizeName})`
+
+            cartItem.querySelector('img').src = pizzaItem.img
+            cartItem.querySelector('.cart--item-nome').innerHTML = pizzaName
+            cartItem.querySelector('.cart--item--qt').innerHTML = cart[i].qt
+            cartItem.querySelector('.cart--item-qtmenos').addEventListener('click', ()=>{
+                if(cart[i].qt > 1){
+                    cart[i].qt--
+                }else{
+                    cart.splice(i, 1)
+                }
+                updateCart()
+            })
+            cartItem.querySelector('.cart--item-qtmais').addEventListener('click', ()=>{
+                cart[i].qt++
+                updateCart()
+            })
+            
+            c('.cart').append(cartItem)
+            
+        }
+
+        desconto = subtotal * 0.1
+        total = subtotal - desconto
+
+        c('.subtotal span:last-child').innerHTML = `R$ ${subtotal.toFixed(2)}`
+        c('.desconto span:last-child').innerHTML = `R$ ${desconto.toFixed(2)}`
+        c('.total span:last-child').innerHTML = `R$ ${total.toFixed(2)}`
+    }else{
+        c('aside').classList.remove('show')
+    }
+}
